@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Power Plant Simulation - Rajasthan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="container">
+        <!-- Left Navigation Bar -->
+        <nav id="sidebar" class="sidebar">
+            <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-content">
+                <div class="nav-header">
+                    <h2>Navigation</h2>
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                        🌙
+                    </button>
+                </div>
+                <ul class="nav-menu">
+                    <li><button class="nav-item active" data-view="map">Map View</button></li>
+                    <li><button class="nav-item" data-view="dashboard">Dashboard</button></li>
+                    <li><button class="nav-item" data-view="equipment">Equipment Health</button></li>
+                    <li><button class="nav-item" data-view="environment">Environmental Factors</button></li>
+                    <li><button class="nav-item" data-view="anomalies">Anomaly Management</button></li>
+                </ul>
+                
+                <div class="anomaly-generator">
+                    <h3>Anomaly Generator</h3>
+                    <select id="anomaly-type" aria-label="Select anomaly type">
+                        <option value="">Select Anomaly</option>
+                        <option value="panel-fault">Panel Fault</option>
+                        <option value="dust-accumulation">Dust Accumulation</option>
+                        <option value="dust-storm">Dust Storm</option>
+                        <option value="inverter-overload">Inverter Overload</option>
+                        <option value="cloud-cover">Cloud Cover Spike</option>
+                    </select>
+                    <button id="generate-anomaly">Generate</button>
+                </div>
+                
+                <div class="time-controls">
+                    <h3>Time Controls</h3>
+                    <label for="time-input">Time:</label>
+                    <input type="time" id="time-input" aria-label="Set simulation time">
+                    <button id="reset-time">Use Current Time</button>
+                    <div class="time-speed-controls" style="margin-top: 10px;">
+                        <button id="advance-time" style="width: 100%;">Advance 1 Hour</button>
+                    </div>
+                </div>
+                
+                <div class="settings-button-container">
+                    <button id="settings-btn" class="settings-btn">
+                        <span class="settings-icon">⚙️</span> Settings
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main Content Area -->
+        <main id="content">
+            <!-- Global Header -->
+            <div class="global-header">
+            </div>
+            
+            <!-- Map View (Default) -->
+            <section id="map-view" class="view active">
+                <div class="view-header">
+                    <h1>Solar Plant Map - Rajasthan</h1>
+                    <div class="controls">
+                        <button id="scan-panels">Start Drone Scan</button>
+                    </div>
+                </div>
+                <canvas id="solar-map" width="800" height="600"></canvas>
+                <div class="map-legend">
+                    <h3>Legend</h3>
+                    <div class="legend-item">
+                        <span class="legend-color optimal"></span>
+                        <span>Optimal Generation</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color reduced"></span>
+                        <span>Reduced Generation</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color faulty"></span>
+                        <span>Faulty/Anomaly</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view">
+                <h1>Power Generation Dashboard</h1>
+                <div class="metrics-grid">
+                    <div class="metric-card" data-metric="capacity">
+                        <svg class="metric-icon" viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M3.55 18.54l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8zM11 22.45h2V19.5h-2v2.95zM4 10.5H1v2h3v-2zm11-4.19V1.5H9v4.81C7.21 7.35 6 9.28 6 11.5c0 3.31 2.69 6 6 6s6-2.69 6-6c0-2.22-1.21-4.15-3-5.19zm5 4.19v2h3v-2h-3zm-2.76 7.66l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4z"/>
+                        </svg>
+                        <h3>Total Capacity</h3>
+                        <p class="metric-value" id="total-capacity">100 MW</p>
+                    </div>
+                    <div class="metric-card" data-metric="generation">
+                        <svg class="metric-icon" viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/>
+                        </svg>
+                        <h3>Current Generation</h3>
+                        <p class="metric-value" id="current-generation">0 MW</p>
+                        <p class="metric-sub" id="generation-percentage">0%</p>
+                    </div>
+                    <div class="metric-card" data-metric="cumulative">
+                        <svg class="metric-icon" viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M9 4v3h5v12h3V7h5V4H9zm-6 8v7h3v-7H3zm3 9h3v-2H6v2z"/>
+                        </svg>
+                        <h3>Daily Cumulative</h3>
+                        <p class="metric-value" id="daily-cumulative">0 MWh</p>
+                    </div>
+                    <div class="metric-card" data-metric="anomalies">
+                        <svg class="metric-icon" viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                        </svg>
+                        <h3>Active Anomalies</h3>
+                        <p class="metric-value" id="anomaly-count">0</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>24-Hour Generation Trend</h3>
+                    <canvas id="generation-chart" width="700" height="300"></canvas>
+                </div>
+            </section>
+            
+            <!-- Equipment Health View -->
+            <section id="equipment-view" class="view">
+                <h1>Equipment Health Monitoring</h1>
+                <div class="equipment-sections">
+                    <!-- Panels Section -->
+                    <div class="equipment-section" data-type="panels">
+                        <div class="section-header">
+                            <svg class="section-icon" viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M4 2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-16a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2zm0 2v8h16v-8h-16zm-2 10h20v2h-8v4h3v2h-10v-2h3v-4h-8v-2z"/>
+                            </svg>
+                            <h2>Solar Panels</h2>
+                        </div>
+                        <div id="panels-grid" class="equipment-grid">
+                            <!-- Panel items will be dynamically generated -->
+                        </div>
+                    </div>
+                    
+                    <!-- Inverters Section -->
+                    <div class="equipment-section" data-type="inverters">
+                        <div class="section-header">
+                            <svg class="section-icon" viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M12 2l-5.5 9h11l-5.5-9zm0 3.84l2.93 4.66h-5.86l2.93-4.66zm-7.9 6.16l4.5 2-4.5 2-.1-4zm14.8 0l.1 4-4.5-2 4.4-2zm-6.9 3c-1.16.28-2 1.32-2 2.5 0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5c0-1.18-.84-2.22-2-2.5v-1h2c.55 0 1-.45 1-1s-.45-1-1-1h-5c-.55 0-1 .45-1 1s.45 1 1 1h2v1z"/>
+                            </svg>
+                            <h2>Inverters</h2>
+                        </div>
+                        <div id="inverters-grid" class="equipment-grid">
+                            <!-- Inverter items will be dynamically generated -->
+                        </div>
+                    </div>
+                    
+                    <!-- Batteries & Transformers Section -->
+                    <div class="equipment-section" data-type="storage">
+                        <div class="section-header">
+                            <svg class="section-icon" viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M4 6h12v2h2v-2h2v12h-2v-2h-2v2h-12v-12zm2 2v8h8v-8h-8zm2 2h4v4h-4v-4zm8-6h2v2h-2v-2zm0 16h2v2h-2v-2z"/>
+                            </svg>
+                            <h2>Batteries & Transformers</h2>
+                        </div>
+                        <div id="storage-grid" class="equipment-grid">
+                            <!-- Battery and Transformer items will be dynamically generated -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Anomaly Management View -->
+            <section id="anomalies-view" class="view">
+                <div class="view-header">
+                    <h1>Anomaly Management</h1>
+                    <div class="controls">
+                        <button id="download-logs">Download Logs</button>
+                        <button id="auto-download-btn">Enable Auto-Download</button>
+                        <button id="ai-report-btn" class="ai-report-btn">🤖 AI Report</button>
+                    </div>
+                </div>
+                <div class="anomaly-management">
+                    <div class="anomaly-stats">
+                        <div class="stat-card" data-stat="active">
+                            <svg class="stat-icon" viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M12 2L13.09 8.26L19 7L15.45 11.82L21.18 16L15 16.66L13.92 23L11 17.74L5.82 21L7.45 14.91L2 12L7.91 10.74L12 2Z"/>
+                            </svg>
+                            <h3>Active Anomalies</h3>
+                            <p class="stat-value" id="active-anomaly-count">0</p>
+                        </div>
+                        <div class="stat-card" data-stat="total">
+                            <svg class="stat-icon" viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                            </svg>
+                            <h3>Total Today</h3>
+                            <p class="stat-value" id="total-anomaly-count">0</p>
+                        </div>
+                        <div class="stat-card" data-stat="resolved">
+                            <svg class="stat-icon" viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                            </svg>
+                            <h3>Resolved</h3>
+                            <p class="stat-value" id="resolved-anomaly-count">0</p>
+                        </div>
+                    </div>
+                    <div class="anomaly-section">
+                        <h2>Active Anomalies</h2>
+                        <div id="anomaly-list" class="anomaly-list">
+                            <!-- Anomalies will be listed here -->
+                        </div>
+                    </div>
+                    <div class="anomaly-history">
+                        <h2>Recent History</h2>
+                        <div id="anomaly-history" class="anomaly-history-list">
+                            <!-- Historical anomalies will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Environmental Factors View -->
+            <section id="environment-view" class="view">
+                <h1>Environmental Factors</h1>
+                <div class="environment-controls">
+                    <label class="control-switch">
+                        <input type="checkbox" id="manual-control-toggle" checked>
+                        <span class="slider"></span>
+                        <span class="label-text">Manual Control</span>
+                    </label>
+                    <button id="reset-environment" class="reset-btn">Reset to Simulation</button>
+                </div>
+                <div class="factors-grid">
+                    <div class="factor-card">
+                        <h3>Temperature</h3>
+                        <p class="factor-value" id="temperature">--°C</p>
+                        <div class="factor-control">
+                            <input type="range" id="temp-slider" class="factor-slider" min="20" max="50" step="0.5">
+                            <input type="number" id="temp-input" class="factor-input" min="20" max="50" step="0.5">
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-fill" id="temp-bar"></div>
+                        </div>
+                    </div>
+                    <div class="factor-card">
+                        <h3>Dust Accumulation</h3>
+                        <p class="factor-value" id="dust-level">--%</p>
+                        <div class="factor-control">
+                            <input type="range" id="dust-slider" class="factor-slider" min="0" max="100" step="1">
+                            <input type="number" id="dust-input" class="factor-input" min="0" max="100" step="1">
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-fill" id="dust-bar"></div>
+                        </div>
+                    </div>
+                    <div class="factor-card">
+                        <h3>Cloud Cover</h3>
+                        <p class="factor-value" id="cloud-cover">--%</p>
+                        <div class="factor-control">
+                            <input type="range" id="cloud-slider" class="factor-slider" min="0" max="100" step="1">
+                            <input type="number" id="cloud-input" class="factor-input" min="0" max="100" step="1">
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-fill" id="cloud-bar"></div>
+                        </div>
+                    </div>
+                    <div class="factor-card">
+                        <h3>Humidity</h3>
+                        <p class="factor-value" id="humidity">--%</p>
+                        <div class="factor-control">
+                            <input type="range" id="humidity-slider" class="factor-slider" min="0" max="100" step="1">
+                            <input type="number" id="humidity-input" class="factor-input" min="0" max="100" step="1">
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-fill" id="humidity-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="impact-summary">
+                    <h3>Total Environmental Impact on Generation</h3>
+                    <p id="total-impact">0% reduction</p>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Resize Handle -->
+        <div id="resize-handle" class="resize-handle"></div>
+        
+        <!-- Right Alert Bar -->
+        <aside id="alert-bar" class="alert-bar">
+            <div class="alert-bar-header">
+                <h2>Alerts & Notifications</h2>
+                <label class="ai-toggle">
+                    <input type="checkbox" id="ai-assistant-toggle">
+                    <span class="ai-toggle-slider"></span>
+                    <span class="ai-toggle-label">AI Assistant</span>
+                </label>
+            </div>
+            
+            <div class="alert-bar-content">
+                <!-- Alerts Section (Always Visible) -->
+                <div id="alerts-section" class="alerts-section">
+                    <div class="log-info">
+                        <span id="log-counter">Session Logs: 0 entries</span>
+                        <span id="last-download" style="display: none;">Last download: <span id="download-time"></span></span>
+                    </div>
+                    <div id="alert-list" class="alert-list">
+                        <!-- Alerts will be dynamically added here -->
+                    </div>
+                </div>
+                
+                <!-- AI Assistant Section (Toggleable) -->
+                <div id="ai-assistant-section" class="ai-assistant-section collapsed">
+                    <div class="section-divider">
+                        <span class="divider-text">AI Assistant</span>
+                    </div>
+                    <div class="ai-assistant-content">
+                        <div class="ai-status">
+                            <span id="ai-connection-status" class="status-indicator">⚪ Checking connection...</span>
+                            <span id="ai-auto-analysis" class="auto-analysis-info" style="display: none;">Last analysis: <span id="analysis-time"></span></span>
+                        </div>
+                        
+                        <div class="ai-quick-actions">
+                            <button class="ai-action-btn" id="analyze-events">📊 Analyze Recent Events</button>
+                            <button class="ai-action-btn" id="predict-maintenance">🔧 Predict Maintenance</button>
+                            <button class="ai-action-btn" id="optimize-performance">⚡ Optimize Performance</button>
+                        </div>
+                        
+                        <div class="ai-chat-container">
+                            <div id="ai-chat-messages" class="ai-chat-messages">
+                                <div class="ai-message system">
+                                    Welcome to AI Assistant! I can help analyze your solar plant's performance and suggest optimizations.
+                                </div>
+                            </div>
+                            <div class="ai-chat-input-container">
+                                <input type="text" id="ai-chat-input" class="ai-chat-input" placeholder="Ask about plant status, anomalies, or optimizations..." disabled>
+                                <button id="ai-send-btn" class="ai-send-btn" disabled>Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- AI Report Modal -->
+    <div id="report-modal" class="modal">
+        <div class="modal-content report-modal-content">
+            <div class="modal-header">
+                <h2>AI Generated Plant Report</h2>
+                <div class="report-modal-actions">
+                    <button id="download-report" class="btn-primary">Download Report</button>
+                    <button class="modal-close" id="close-report">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body report-preview">
+                <div id="report-loading" class="report-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Generating AI Report...</p>
+                </div>
+                <iframe id="report-iframe" class="report-iframe" style="display: none;"></iframe>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="modal-close" id="close-settings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>AI Assistant Configuration</h3>
+                    <div class="setting-item">
+                        <label for="llm-base-url">LLM Base URL:</label>
+                        <input type="text" id="llm-base-url" class="setting-input" value="http://127.0.0.1:1234" placeholder="http://127.0.0.1:1234">
+                        <small class="setting-help">Local LLM server endpoint</small>
+                    </div>
+                    <div class="setting-item">
+                        <label for="ai-analysis-interval">Auto-Analysis Interval (seconds):</label>
+                        <input type="number" id="ai-analysis-interval" class="setting-input" value="180" min="30" max="3600" step="30">
+                        <small class="setting-help">How often AI analyzes logs (30-3600 seconds)</small>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Log Configuration</h3>
+                    <div class="setting-item">
+                        <label for="log-download-interval">Auto-Download Interval (seconds):</label>
+                        <input type="number" id="log-download-interval" class="setting-input" value="600" min="60" max="7200" step="60">
+                        <small class="setting-help">How often logs are auto-downloaded (60-7200 seconds)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings" class="btn-primary">Save Settings</button>
+                <button id="reset-settings" class="btn-secondary">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="ai-assistant.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
